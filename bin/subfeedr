@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+if (__FILE__ eq $0) {
+    exec 'plackup', '--server', 'AnyEvent', '--app', $0, @ARGV;
+} else {
+    require Subfeedr;
+    Subfeedr->app;
+}

@@ -1,0 +1,32 @@
+NAME
+    Subfeedr - Open PubSubHubbub Hub that does polling and proxy PuSH pings
+
+SYNOPSIS
+      > redis-server &
+      > subfeedr
+
+DESCRIPTION
+    Subfeedr is an open PubSubHubbub hub implementation that also does
+    periodically polling feeds so anyone can subscribe to any feeds that are
+    not PubSubHubbub publishers.
+
+    Subfeedr is written in Perl and built on top of Tatsumaki, Plack,
+    AnyEvent and Redis data store. Polling, serving web requests and
+    querying database are all done in a non-blocking event loop.
+
+NOTE
+    The name Subfeedr is given with my respect to Superfeedr. This
+    implementation should be considered naive, and not production ready nor
+    scalable. It must be fun to hack on though!
+
+AUTHOR
+    Tatsuhiko Miyagawa <miyagawa@bulknews.net>
+
+LICENSE
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+SEE ALSO
+    <http://pubsubhubbub.appspot.com/> <http://superfeedr.com/> Tatsumaki
+    Plack AnyEvent AnyEvent::Redis
+

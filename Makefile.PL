@@ -1,0 +1,15 @@
+use inc::Module::Install;
+name 'Subfeedr';
+all_from 'lib/Subfeedr.pm';
+readme_from 'lib/Subfeedr.pm';
+requires 'Tatsumaki';
+requires 'AnyEvent::Redis';
+requires 'Digest::SHA';
+requires 'JSON';
+requires 'XML::Feed';
+build_requires 'Test::More';
+use_test_base;
+auto_include_deps;
+author_tests('xt');
+auto_set_repository;
+WriteAll;
