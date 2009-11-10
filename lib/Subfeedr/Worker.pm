@@ -55,13 +55,22 @@ sub work_url {
                 next unless $entry->id;
                 $cv->begin;
 
-                my $sha_id   = $sha1 . "." . Digest::SHA::sha1_hex($entry->id);
-                my $sha_body = Digest::SHA::sha1_hex($entry->content->body);
-                Subfeedr::DataStore->new('entry')->get($sha_id, sub {
-                    my $v = shift;
-                    if (!$v or $v ne $sha_body) {
+                my $entry_sha = Digest::SHA::sha1_hex($entry->id);
+                my $key = join ".", $sha1, $entry_sha;
+
+                my $json = JSON::encode_json({
+                    sha1 => $entry_sha,
+                    feed => $sha1,
+                    id   => $entry->id,
+                    content => $entry->content->body
+                });
+
+                my $sha_json = Digest::SHA::sha1_hex($json);
+                Subfeedr::DataStore->new('entry')->get($key, sub {
+                    my $v = $_[0] ? Digest::SHA::sha1_hex(shift) : undef;
+                    if (!$v or $v ne $sha_json) {
                         push @new, $entry;
-                        Subfeedr::DataStore->new('entry')->set($sha_id, $sha_body);
+                        Subfeedr::DataStore->new('entry')->set($key, $json);
                     }
                     $cv->end;
                 });
