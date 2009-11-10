@@ -4,6 +4,7 @@ extends 'Tatsumaki::Handler';
 __PACKAGE__->asynchronous(1);
 
 use Tatsumaki::Error;
+use Tatsumaki::MessageQueue;
 use Digest::SHA;
 use Try::Tiny;
 use URI;
@@ -61,7 +62,7 @@ sub publish {
         my $sha1 = Digest::SHA::sha1_hex($url);
         Subfeedr::DataStore->new('known_feed')->sismember('set', $sha1, $self->async_cb(sub {
             return unless $_[0];
-            Subfeedr::Worker->work_url($url);
+            Tatsumaki::MessageQueue->instance('feed_fetch')->publish($url);
         }));
     }
 
@@ -128,7 +129,7 @@ sub subscribe {
                 Subfeedr::DataStore->new('feed')->set($sha1_feed, JSON::encode_json({
                     sha1 => $sha1_feed,
                     url  => $topic,
-                }), sub { Subfeedr::Worker->work_url($topic) });
+                }), sub { Tatsumaki::MessageQueue->instance('feed_fetch')->publish($topic) });
 
                 $self->response->code(204);
                 $self->finish('');

@@ -4,6 +4,7 @@ extends 'Tatsumaki::Service';
 
 use Subfeedr::DataStore;
 use Tatsumaki::HTTPClient;
+use Tatsumaki::MessageQueue;
 use Time::HiRes;
 use Try::Tiny;
 use AnyEvent;
@@ -22,11 +23,17 @@ sub start {
         $ds->sort('set', by => 'next_fetch.*', get => 'feed.*', limit => "0 20", sub {
             my $feeds = shift;
             for my $feed (map JSON::decode_json($_), @$feeds) {
-                next if $feed->{next_fetch} > time;
+                next if $feed->{next_fetch} && $feed->{next_fetch} > time;
                 $self->work_url($feed->{url});
             }
         });
     };
+
+    my $mq = Tatsumaki::MessageQueue->instance('feed_fetch');
+    $mq->poll("worker", sub {
+        my $url = shift;
+        $self->work_url($url);
+    });
 }
 
 sub work_url {
