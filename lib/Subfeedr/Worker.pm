@@ -20,11 +20,16 @@ sub start {
     my $t; $t = AE::timer 0, 15, sub {
         scalar $t;
         my $ds = Subfeedr::DataStore->new('known_feed');
-        $ds->sort('set', by => 'next_fetch.*', get => 'feed.*', limit => "0 20", sub {
-            my $feeds = shift;
-            for my $feed (map JSON::decode_json($_), @$feeds) {
-                next if $feed->{next_fetch} && $feed->{next_fetch} > time;
-                $self->work_url($feed->{url});
+        my $cv = $ds->sort('set', by => 'next_fetch.*', get => 'feed.*', limit => "0 20");
+        $cv->cb(sub {
+            # Use cv to catch errors ERR: no such key exist
+            my $cv = shift;
+            try {
+                my $feeds = shift;
+                for my $feed (map JSON::decode_json($_), @$feeds) {
+                    next if $feed->{next_fetch} && $feed->{next_fetch} > time;
+                    $self->work_url($feed->{url});
+                }
             }
         });
     };
