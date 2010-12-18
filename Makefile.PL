@@ -7,6 +7,7 @@ requires 'AnyEvent::Redis';
 requires 'Digest::SHA';
 requires 'JSON';
 requires 'XML::Feed';
+requires 'Plack::Handler::AnyEvent::HTTPD';
 build_requires 'Test::More';
 use_test_base;
 auto_include_deps;

@@ -93,7 +93,7 @@ sub work_url {
         Subfeedr::DataStore->new('next_fetch')->set($sha1, $time);
         Subfeedr::DataStore->new('feed')->set($sha1, JSON::encode_json({
             sha1 => $sha1,
-            url  => $url,
+            url  => "$url",
             next_fetch => $time,
         }));
     });
@@ -112,7 +112,8 @@ sub notify {
         my $subs = shift;
         for my $subscriber (map JSON::decode_json($_), @$subs) {
             warn "POSTing updates for $url to $subscriber->{callback}\n";
-            my $hmac = Digest::SHA::hmac_sha1($payload, $subscriber->{secret});
+            my $hmac = Digest::SHA::hmac_sha1_hex(
+                $payload, $subscriber->{secret});
             my $req = HTTP::Request->new(POST => $subscriber->{callback});
             $req->content_type($mime_type);
             $req->header('X-Hub-Signature' => "sha1=$hmac");
@@ -122,6 +123,8 @@ sub notify {
             Tatsumaki::HTTPClient->new->request($req, sub {
                 my $res = shift;
                 if ($res->is_error) {
+                    warn $res->status_line;
+                    warn $res->content;
                     # TODO retry
                 }
             });
